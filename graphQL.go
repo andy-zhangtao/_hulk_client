@@ -39,7 +39,9 @@ func queryHulk(name, version string) (env map[string]interface{}, err error) {
 		logrus.Error(fmt.Sprintf("Unmarshal Configure Error [%s]", err))
 	}
 
-	logrus.WithFields(env).Info(HULK_GO_SDK)
+	for key, value := range env {
+		logrus.WithFields(logrus.Fields{key: value}).Info(HULK_GO_SDK)
+	}
 
 	return
 }
