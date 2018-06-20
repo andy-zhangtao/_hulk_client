@@ -35,3 +35,29 @@ func Register(name, version, resume string) (err error) {
 
 	return
 }
+
+// UnRegister 服务卸载
+// 当服务确定下线或者暂时离线时，调用此函数来通知Hulk服务下线
+// name:服务名称 version:使用版本
+func UnRegister(name, version string)(err error){
+	variables := map[string]interface{}{
+		"name":    graphql.String(name),
+		"version": graphql.String(version),
+	}
+
+	var query struct {
+		AddRegister struct {
+			Name    graphql.String
+		} `graphql:"deleteRegister(name: $name, version: $version)"`
+	}
+
+	logrus.WithFields(logrus.Fields{"variables": variables}).Info(HULK_GO_SDK)
+
+	client := graphql.NewClient(os.Getenv(ENDPOINT), nil)
+	err = client.Mutate(context.Background(), &query, variables)
+	if err != nil {
+		logrus.Error(fmt.Sprintf("Service Register Error [%s]", err))
+	}
+
+	return
+}
