@@ -6,6 +6,7 @@ import (
 	"os"
 	"context"
 	"fmt"
+	"github.com/andy-zhangtao/gogather/zoutput"
 )
 
 // Register 服务注册.
@@ -21,13 +22,16 @@ func Register(name, version, resume string) (err error) {
 
 	var query struct {
 		AddRegister struct {
-			Name    graphql.String
+			Name graphql.String
 		} `graphql:"addRegister(name: $name, version: $version, resume: $resume)"`
 	}
 
 	logrus.WithFields(logrus.Fields{"variables": variables}).Info(HULK_GO_SDK)
 
 	client := graphql.NewClient(os.Getenv(ENDPOINT), nil)
+	c := make(chan int)
+	go zoutput.ScrollBar(c, zoutput.EQUAL)
+	defer close(c)
 	err = client.Mutate(context.Background(), &query, variables)
 	if err != nil {
 		logrus.Error(fmt.Sprintf("Service Register Error [%s]", err))
@@ -39,7 +43,7 @@ func Register(name, version, resume string) (err error) {
 // UnRegister 服务卸载
 // 当服务确定下线或者暂时离线时，调用此函数来通知Hulk服务下线
 // name:服务名称 version:使用版本
-func UnRegister(name, version string)(err error){
+func UnRegister(name, version string) (err error) {
 	variables := map[string]interface{}{
 		"name":    graphql.String(name),
 		"version": graphql.String(version),
@@ -47,7 +51,7 @@ func UnRegister(name, version string)(err error){
 
 	var query struct {
 		AddRegister struct {
-			Name    graphql.String
+			Name graphql.String
 		} `graphql:"deleteRegister(name: $name, version: $version)"`
 	}
 
